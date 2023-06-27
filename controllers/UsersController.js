@@ -9,24 +9,24 @@ module.exports = class UsersController {
     if (!email) {
       res.statusCode = 400;
       res.json({ error: 'Missing email' });
-      return
+      return;
     }
 
     if (!password) {
       res.statusCode = 400;
       res.json({ error: 'Missing password' });
-      return
+      return;
     }
 
     const existingEmail = await dbClient.db.collection('users').findOne({ email });
     if (existingEmail) {
       res.statusCode = 400;
       res.json({ error: 'Already exist' });
-      return
+      return;
     }
 
     const hashesPassword = sha1(password);
-    const newUser = await dbClient.db.collection('users').insertone({ email, password: hashesPassword });
+    const newUser = await dbClient.db().collection('users').insertOne({ email, password: hashesPassword });
     res.statusCode = 201;
     res.json({ id: newUser.insertedId, email });
   }

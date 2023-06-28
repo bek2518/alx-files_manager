@@ -2,8 +2,11 @@ import { ObjectID } from 'mongodb';
 import { v4 } from 'uuid';
 import { promises, existsSync } from 'fs';
 import { contentType } from 'mime-types';
+import Queue from 'bull/lib/queue';
 import redisClient from '../utils/redis';
 import dbClient from '../utils/db';
+
+const fileQueue = new Queue('fileQueue');
 
 module.exports = class FilesController {
   static async postUpload(req, res) {
@@ -89,6 +92,9 @@ module.exports = class FilesController {
         res.json({
           id: result.insertedId, userId, name, type, isPublic, parentId, localPath,
         });
+        if (type === 'image') {
+          fileQueue.add({ userId, fileId: result.insertedId });
+        }
       });
     }
   }
@@ -234,6 +240,8 @@ module.exports = class FilesController {
     const userId = await redisClient.get(token);
 
     const { id } = req.params;
+    const { size } = req.params;
+
     const file = await dbClient.db.collection('files').findOne({ _id: new ObjectID(id) });
     if (!file) {
       res.statusCode = 404;
@@ -244,6 +252,10 @@ module.exports = class FilesController {
       res.statusCode = 404;
       res.json({ error: 'Not found' });
       return;
+    }
+    let localPath = file.type
+    if (size) {
+      localPath = `${localPath}_${size}`
     }
     if (file.type === 'folder') {
       res.statusCode = 400;

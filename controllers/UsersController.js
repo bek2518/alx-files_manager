@@ -1,7 +1,10 @@
 import sha1 from 'sha1';
 import { ObjectID } from 'mongodb';
+import Queue from 'bull/lib/queue';
 import dbClient from '../utils/db';
 import redisClient from '../utils/redis';
+
+const userQueue = new Queue('userQueue');
 
 module.exports = class UsersController {
   static async postNew(req, res) {
@@ -31,6 +34,7 @@ module.exports = class UsersController {
     const newUser = await dbClient.db.collection('users').insertOne({ email, password: hashesPassword });
     res.statusCode = 201;
     res.json({ id: newUser.insertedId, email });
+    userQueue.add({ userId: newUser.insertedId });
   }
 
   static async getMe(req, res) {

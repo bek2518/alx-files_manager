@@ -25,7 +25,7 @@ module.exports = class AuthController {
     await redisClient.set(key, user._id.toString(), 24 * 60 * 60);
 
     res.statusCode = 200;
-    res.send({ token });
+    res.json({ token });
   }
 
   static async getDisconnect(req, res) {

@@ -253,16 +253,19 @@ module.exports = class FilesController {
       res.json({ error: 'Not found' });
       return;
     }
-    let localPath = file.type
+
+    let localPath = '';
     if (size) {
-      localPath = `${localPath}_${size}`
+      localPath = `${file.type}_${size}`;
+    } else {
+      localPath = file.type;
     }
     if (file.type === 'folder') {
       res.statusCode = 400;
       res.json({ error: "A folder doesn't have content" });
       return;
     }
-    if (!existsSync(file.localPath)) {
+    if (!existsSync(localPath)) {
       res.statusCode = 404;
       res.json({ error: 'Not found' });
       return;

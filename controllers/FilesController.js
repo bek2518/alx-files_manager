@@ -91,4 +91,74 @@ module.exports = class FilesController {
       });
     }
   }
+
+  static async getShow(req, res) {
+    const xToken = req.header('X-Token');
+    const token = `auth_${xToken}`;
+    const userId = await redisClient.get(token);
+
+    const user = await dbClient.db.collection('users').findOne({ _id: new ObjectID(userId) });
+
+    if (!user) {
+      res.statusCode = 401;
+      res.json({ error: 'Unauthorized' });
+      return;
+    }
+
+    const parentId = req.params.id;
+
+    const file = await dbClient.db.collection('files').findOne({ _id: new ObjectID(parentId), userId });
+    if (!file) {
+      res.statusCode = 404;
+      res.json({ error: 'Not found' });
+      return;
+    }
+    res.statusCode = 200;
+    res.json(file);
+  }
+
+  static async getIndex(req, res) {
+    const xToken = req.header('X-Token');
+    const token = `auth_${xToken}`;
+    const userId = await redisClient.get(token);
+
+    const user = await dbClient.db.collection('users').findOne({ _id: new ObjectID(userId) });
+
+    if (!user) {
+      res.statusCode = 401;
+      res.json({ error: 'Unauthorized' });
+      return;
+    }
+
+    const { parentId } = req.query;
+    const page = req.query.page || 0;
+
+    let filter = {};
+    if (parentId) {
+      filter = { parentId, userId };
+    } else {
+      filter = { userId };
+    }
+    const files = await dbClient.db.collection('files')
+      .aggregate([
+        { $match: filter },
+        { $sort: { _id: -1 } },
+        { $skip: parseInt(page.toString(), 10) * 20 },
+        { $limit: 20 },
+        {
+          $project: {
+            _id: 0,
+            id: '$_id',
+            userId: '$userId',
+            name: '$name',
+            type: '$type',
+            isPublic: '$isPublic',
+            parentId: {
+              $cond: { if: { $eq: ['$parentId', '0'] }, then: 0, else: '$parentId' },
+            },
+          },
+        },
+      ]).toArray();
+    res.status(200).json(files);
+  }
 };

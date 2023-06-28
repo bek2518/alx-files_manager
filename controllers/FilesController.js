@@ -159,6 +159,71 @@ module.exports = class FilesController {
           },
         },
       ]).toArray();
-    res.status(200).json(files);
+    res.statusCode = 200;
+    res.json(files);
+  }
+
+  static async putPublish(req, res) {
+    const xToken = req.header('X-Token');
+    const token = `auth_${xToken}`;
+    const userId = await redisClient.get(token);
+
+    const user = await dbClient.db.collection('users').findOne({ _id: new ObjectID(userId) });
+
+    if (!user) {
+      res.statusCode = 401;
+      res.json({ error: 'Unauthorized' });
+      return;
+    }
+    const { id } = req.params;
+    const file = await dbClient.db.collection('files').findOne({ _id: new ObjectID(id), userId });
+    if (!file) {
+      res.statusCode = 404;
+      res.json({ error: 'Not found' });
+      return;
+    }
+
+    await dbClient.db.collection('files').updateOne({ _id: new ObjectID(id), userId }, { $set: { isPublic: true } });
+    res.statusCode = 200;
+    res.json({
+      id: file._id,
+      userId: file.userId,
+      name: file.name,
+      type: file.type,
+      isPublic: true,
+      parentId: file.parentId,
+    });
+  }
+
+  static async putUnpublish(req, res) {
+    const xToken = req.header('X-Token');
+    const token = `auth_${xToken}`;
+    const userId = await redisClient.get(token);
+
+    const user = await dbClient.db.collection('users').findOne({ _id: new ObjectID(userId) });
+
+    if (!user) {
+      res.statusCode = 401;
+      res.json({ error: 'Unauthorized' });
+      return;
+    }
+
+    const { id } = req.params;
+    const file = await dbClient.db.collection('files').findOne({ _id: new ObjectID(id), userId });
+    if (!file) {
+      res.statusCode = 404;
+      res.json({ error: 'Not found' });
+      return;
+    }
+    await dbClient.db.collection('files').updateOne({ _id: new ObjectID(id), userId }, { $set: { isPublic: false } });
+    res.statusCode = 200;
+    res.json({
+      id: file._id,
+      userId: file.userId,
+      name: file.name,
+      type: file.type,
+      isPublic: false,
+      parentId: file.parentId,
+    });
   }
 };

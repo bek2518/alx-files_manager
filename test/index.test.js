@@ -43,72 +43,73 @@ describe('AuthController', function() {
   });
 })
 
-/**
 describe('FilesController', function() {
-  it('Test POST /files', (done) => {
-    request.post('http://localhost:5000/files', (error, response, body) => {
-    expect(response.statusCode).to.be.equal(200);
-    expect(response.body).to.be.equal('{"redis":true,"db":true}')
-    done()
+  describe('Tests for POST /files', function () {
+    it('Test POST /files', (done) => {
+      request.post('http://localhost:5000/files', (error, response, body) => {
+      expect(response.statusCode).to.be.equal(401);
+      done()
+      })
+
+      it('Test POST /files', (done) => {
+        request.post('http://localhost:5000/files', (error, response, body) => {
+        expect(response.statusCode).to.be.equal(401);
+        done()
+        })
+      })
     })
   })
   
   it('Test POST /files/:id', (done) => {
     request.post('http://localhost:5000/files/:id', (error, response, body) => {
-    expect(response.statusCode).to.be.equal(200);
-    expect(response.body).to.match(/"users":\d+,"files":\d+/);
+    expect(response.statusCode).to.be.equal(404);
     done();
     });
   });
 
   it('Test GET /files', (done) => {
     request.get('http://localhost:5000/files', (error, response, body) => {
-      expect(response.statusCode).to.be.equal(200);
-      expect(response.body).to.be.equal('{"redis":true,"db":true}')
+      expect(response.statusCode).to.be.equal(401);
       done()
     })
   })
   
     it('Test POST /files/:id/publish', (done) => {
     request.post('http://localhost:5000/files/:id/publish', (error, response, body) => {
-      expect(response.statusCode).to.be.equal(200);
-      expect(response.body).to.match(/"users":\d+,"files":\d+/);
+      expect(response.statusCode).to.be.equal(404);
       done();
     });
   });
 
     it('Test POST /ubpublish', (done) => {
     request.post('http://localhost:5000/files/:id/unpublish', (error, response, body) => {
-      expect(response.statusCode).to.be.equal(200);
-      expect(response.body).to.be.equal('{"redis":true,"db":true}')
+      expect(response.statusCode).to.be.equal(404);
       done()
     })
   })
   
+  describe('', function() {
     it('Test GET /files/:id/data', (done) => {
-    request.get('http://localhost:5000/files/:id/data', (error, response, body) => {
-      expect(response.statusCode).to.be.equal(200);
-      expect(response.body).to.match(/"users":\d+,"files":\d+/);
-      done();
-    });
+      request.get('http://localhost:5000/files/:id/data', (error, response, body) => {
+        expect(response.statusCode).to.be.equal(200);
+        done();
+      });
     });
   })
+})
 
 describe('UsersController', function() {
   it('Test POST /users', (done) => {
     request.post('http://localhost:5000/users', (error, response, body) => {
-    expect(response.statusCode).to.be.equal(200);
-    expect(response.body).to.be.equal('{"redis":true,"db":true}')
+    expect(response.statusCode).to.be.equal(400);
     done()
     })
   })
   
   it('Test GET /users/me', (done) => {
     request.get('http://localhost:5000/users/me', (error, response, body) => {
-    expect(response.statusCode).to.be.equal(200);
-    expect(response.body).to.match(/"users":\d+,"files":\d+/);
+    expect(response.statusCode).to.be.equal(401);
     done();
     });
   });
 })
-*/
